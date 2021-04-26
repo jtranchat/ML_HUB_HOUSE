@@ -1,5 +1,6 @@
 import pandas
 import numpy as np
+from scipy.special import expit
 import sklearn
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
@@ -11,9 +12,15 @@ df = pandas.read_csv("kc_house_data.csv")
 dataset = df.values
 
 # Set les matrices X les features et Y notre target
+np.set_printoptions(suppress=True)  # prevent numpy exponential
 X_entrer = dataset[:, 1:5]
-X_entrer = np.append(X_entrer, [[3, 1.5, 1060, 9711]], axis=0)
+X_entrer = np.append(X_entrer, [[3, 1, 1400, 1581]], axis=0)
+
+# Récupération des valeurs que l'on cherche en décimal (pour l'output)
+xPredictionClear = np.split(X_entrer, [len(X_entrer) - 1])[1]
+
 Y_entrer = dataset[:, 0]
+Y_entrer = Y_entrer.reshape(len(Y_entrer), 1)
 
 # On divise chaque entré par la valeur max des entrées
 X_entrer = X_entrer / np.amax(X_entrer, axis=0)
@@ -63,7 +70,7 @@ class Neural_Network(object):
 
         # Fonction d'activation
     def sigmoid(self, s):
-        return 1/(1+np.exp(-s))
+        return expit(s)  # 1/(1+np.exp(-s))
 
         # Dérivée de la fonction d'activation
     def sigmoidPrime(self, s):
@@ -71,9 +78,9 @@ class Neural_Network(object):
 
         # Fonction de rétropropagation
     def backward(self, X, Y, o):
-        self.o_error = Y - o.T  # Calcul de l'erreur
+        self.o_error = Y - o  # Calcul de l'erreur
         # Application de la dérivée de la sigmoid à cette erreur
-        self.o_delta = self.o_error.T*self.sigmoidPrime(o)
+        self.o_delta = self.o_error*self.sigmoidPrime(o)
         # Calcul de l'erreur de nos neurones cachés
         self.z2_error = self.o_delta.dot(self.W2.T)
         # Application de la dérivée de la sigmoid à cette erreur
@@ -91,9 +98,10 @@ class Neural_Network(object):
         # Fonction de prédiction
     def predict(self):
 
+        resOut = self.forward(xPrediction) * np.amax(Y_entrer, axis=0)
         print("Donnée prédite apres entrainement: ")
-        print("Entrée : \n" + str(xPrediction))
-        print("Sortie : \n" + str(self.forward(xPrediction)))
+        print("Entrée : \n" + str(xPredictionClear))
+        print("Sortie : \n" + str(resOut))
 
         # if(self.forward(xPrediction) < 0.5):
         #     print("La fleur est BLEU ! \n")
@@ -105,12 +113,12 @@ NN = Neural_Network()
 # NN.train(X, Y)
 
 
-for i in range(1000):  # Choisissez un nombre d'itération, attention un trop grand nombre peut créer un overfitting !
+for i in range(2):  # Choisissez un nombre d'itération, attention un trop grand nombre peut créer un overfitting !
     print("# " + str(i) + "\n")
+    NN.train(X, Y)
     # print("Valeurs d'entrées: \n" + str(X))
     print("Sortie actuelle: \n" + str(Y))
     print("Sortie prédite: \n" + str(np.matrix.round(NN.forward(X), 5)))
     print("\n")
-    NN.train(X, Y)
 
 NN.predict()
