@@ -27,33 +27,35 @@ print("moyenne : \n", numpy.mean(centerReducedData,axis=0), "\n")
 #écart-type (égal à 1)
 print("écart-type :", numpy.std(centerReducedData,axis=0,ddof=0), "\n")
 
-#calculs
+#calculs des coordonées factorielle
 coord = acp.fit_transform(centerReducedData)
+print("coordonées factorielle : \n")
+print(coord)
 #nombre de composantes calculées
 print("nombre de composantes calculées", acp.n_components_, "\n") #5
 
 #variance expliquée
-variance = acp.singular_values_**2/n
+variance = (n-1)/n*acp.explained_variance_
 print("varaince expliquée :", variance, "\n")
 
 #proportion de variance expliquée
 print("proportion de variance expliquée: \n",acp.explained_variance_ratio_, "\n")
 
-#scree plot
+#Variances (Valeurs Propre)
 plt.plot(numpy.arange(1,p+1),variance)
-plt.title("Scree plot")
-plt.ylabel("Valeurs propre")
-plt.xlabel("Factor number")
+plt.title("Variances (Valeurs Propre) par rapport au facteur")
+plt.ylabel("Variances (Valeurs Propre)")
+plt.xlabel("Facteur")
 plt.show()
 
 #cumul de variance expliquée
 plt.plot(numpy.arange(1,p+1),numpy.cumsum(acp.explained_variance_ratio_))
-plt.title("Explained variance vs. # of factors")
-plt.ylabel("Cumsum explained variance ratio")
-plt.xlabel("Factor number")
+plt.title("variance expliquée par rapport au facteur")
+plt.ylabel("Addition rapport de variance expliqué")
+plt.xlabel("Facteur")
 plt.show()
 
-#positionnement desindividus dans le plan factoriel (pas plus sinon on n'y voit rien)
+#positionnement des individus dans le plan factoriel
 fig, axes = plt.subplots(figsize=(12,12))
 axes.set_xlim(-6,6)
 axes.set_ylim(-6,6)
@@ -61,6 +63,7 @@ for i in range(n):
    plt.annotate(data.index[i],(coord[i,0],coord[i,1]))
 plt.plot([-6,6],[0,0],color='silver',linestyle='-',linewidth=1)
 plt.plot([0,0],[-6,6],color='silver',linestyle='-',linewidth=1)
+plt.title("positionnement des individus dans le plan factoriel")
 plt.show()
 
 #contribution des individus dans l'inertie totale
@@ -108,6 +111,9 @@ plt.plot([0,0],[-1,1],color='silver',linestyle='-',linewidth=1)
 #ajouter un cercle
 cercle = plt.Circle((0,0),1,color='blue',fill=False)
 axes.add_artist(cercle)
+plt.title("cercle des corrélations")
+plt.ylabel("F2")
+plt.xlabel("F1")
 #affichage
 plt.show()
 
@@ -188,34 +194,8 @@ plt.plot([0,0],[-1,1],color='silver',linestyle='-',linewidth=1)
 #ajouter un cercle
 cercle = plt.Circle((0,0),1,color='blue',fill=False)
 axes.add_artist(cercle)
-#affichage
-plt.show()
-
-#traitement de var. quali supplémentaire
-vsQuali = varSupp.iloc[:,0]
-print("Variable illustrative qualitative :\n")
-print(vsQuali, "\n")
-
-#modalités de la variable qualitative
-modalites = numpy.unique(vsQuali)
-print("modalités de la variable qualitative: \n")
-print(modalites, "\n")
-
-#liste des couleurs
-couleurs = ['r', 'y','g', 'm','b', 'c']
-#faire un graphique en coloriant les points
-fig, axes = plt.subplots(figsize=(12,12))
-axes.set_xlim(-6,6)
-axes.set_ylim(-6,6)
-#pour chaque modalité de la var. illustrative
-for c in range(len(modalites)):
-   #numéro des individus concernés
-   numero = numpy.where(vsQuali == modalites[c])
-   #les passer en revue pour affichage
-   for i in numero[0]:
-      plt.annotate(data.index[i],(coord[i,0],coord[i,1]),color=couleurs[c])
-#ajouter les axes
-plt.plot([-6,6],[0,0],color='silver',linestyle='-',linewidth=1)
-plt.plot([0,0],[-6,6],color='silver',linestyle='-',linewidth=1)
+plt.title("cercle des corrélations avec 2 variables supplémentaires")
+plt.ylabel("F2")
+plt.xlabel("F1")
 #affichage
 plt.show()
