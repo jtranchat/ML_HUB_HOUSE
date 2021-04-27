@@ -1,12 +1,10 @@
 import pandas
 import numpy as np
-from scipy.special import expit
 import sklearn
-from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
 
-sc = StandardScaler()
-
+# Sans traitement ACP
 # Data
 df = pandas.read_csv("kc_house_data.csv")
 dataset = df.values
@@ -14,31 +12,23 @@ dataset = df.values
 # Set les matrices X les features et Y notre target
 np.set_printoptions(suppress=True)  # prevent numpy exponential
 X_entrer = dataset[:, 1:5]
-X_entrer = np.append(X_entrer, [[3, 1, 1400, 1581]], axis=0)
 
-# Récupération des valeurs que l'on cherche en décimal (pour l'output)
-xPredictionClear = np.split(X_entrer, [len(X_entrer) - 1])[1]
+xPredictionClear = [4, 3, 1960, 5000]
+# Ajout des valeurs que l'on veux predire
+X_entrer = np.append(X_entrer, [xPredictionClear], axis=0)
 
 Y_entrer = dataset[:, 0]
 Y_entrer = Y_entrer.reshape(len(Y_entrer), 1)
 
-# On divise chaque entré par la valeur max des entrées
+# On divise chaque entré par la valeur max des entrées (centrés et réduites)
 X_entrer = X_entrer / np.amax(X_entrer, axis=0)
 Y = Y_entrer / np.amax(Y_entrer, axis=0)
-
-# X_scale = sc.fit_transform(X)
-
 
 # On récupère ce qu'il nous intéresse
 # Données sur lesquelles on va s'entrainer
 X = np.split(X_entrer, [len(X_entrer)-1])[0]
 # Valeur que l'on veut trouver
 xPrediction = np.split(X_entrer, [len(X_entrer)-1])[1]
-
-
-# X_train, X_test, y_train, y_test = train_test_split(
-#     X, Y, test_size=0.2, random_state=1)
-# print(X_train.shape, X_test.shape)
 
 
 class Neural_Network(object):
@@ -70,7 +60,11 @@ class Neural_Network(object):
 
         # Fonction d'activation
     def sigmoid(self, s):
-        return expit(s)  # 1/(1+np.exp(-s))
+        return np.where(
+            s >= 0,  # condition
+            1 / (1 + np.exp(-s)),  # For positive values
+            np.exp(s) / (1 + np.exp(s))  # For negative values
+        )  # 1/(1+np.exp(-s))
 
         # Dérivée de la fonction d'activation
     def sigmoidPrime(self, s):
@@ -103,22 +97,14 @@ class Neural_Network(object):
         print("Entrée : \n" + str(xPredictionClear))
         print("Sortie : \n" + str(resOut))
 
-        # if(self.forward(xPrediction) < 0.5):
-        #     print("La fleur est BLEU ! \n")
-        # else:
-        #     print("La fleur est ROUGE ! \n")
-
 
 NN = Neural_Network()
-# NN.train(X, Y)
 
-
-for i in range(2):  # Choisissez un nombre d'itération, attention un trop grand nombre peut créer un overfitting !
-    print("# " + str(i) + "\n")
+# Boucle pour entrainer nos poids
+for i in range(100000):
+    print("\n # " + str(i))
     NN.train(X, Y)
-    # print("Valeurs d'entrées: \n" + str(X))
     print("Sortie actuelle: \n" + str(Y))
     print("Sortie prédite: \n" + str(np.matrix.round(NN.forward(X), 5)))
-    print("\n")
 
 NN.predict()
